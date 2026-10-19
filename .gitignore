@@ -1,0 +1,30 @@
+# Секретные настройки
+.env
+
+# Виртуальное окружение Python
+.venv/
+
+# Временные файлы Python
+__pycache__/
+*.pyc
+
+# Локальная база данных
+instance/
+*.db
+
+# Дополнительные секретные файлы
+.env.*
+!.env.example
+
+# Другие форматы SQLite и служебные файлы
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Служебные файлы и настройки редактора
+.pytest_cache/
+.vscode/
+.DS_Store
+Thumbs.db

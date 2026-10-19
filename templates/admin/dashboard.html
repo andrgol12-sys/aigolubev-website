@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявки клиентов — AIGolubev</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #0b1220;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #60a5fa;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+        }
+
+        .request-card {
+            background: #162238;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        .request-card h2 {
+            color: #93c5fd;
+            margin-top: 0;
+        }
+
+        .request-card p {
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .message {
+            white-space: pre-wrap;
+        }
+
+        .date {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .empty {
+            margin-top: 30px;
+            color: #94a3b8;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #93c5fd;
+            text-decoration: none;
+        }
+
+        .logout-button {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-button:hover {
+            background: #b91c1c;
+        }
+
+        .status-read {
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .status-unread {
+            color: #facc15;
+            font-weight: bold;
+        }
+
+        .status-button {
+            margin: 5px 0 15px;
+            padding: 10px 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .status-button:hover {
+            background: #1d4ed8;
+        }
+
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #162238;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 18px 24px;
+            min-width: 160px;
+        }
+
+        .stat-card span {
+            display: block;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .stat-card strong {
+            font-size: 28px;
+            color: #60a5fa;
+        }
+
+        .stat-card .unread-number {
+            color: #facc15;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .filter-button {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #162238;
+            color: #93c5fd;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .filter-button:hover {
+            background: #243650;
+        }
+
+        .filter-button.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 220px;
+            padding: 12px 16px;
+            background: #162238;
+            color: white;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        .search-button {
+            padding: 12px 22px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .search-button:hover {
+            background: #1d4ed8;
+        }
+
+        /* Этап обработки заявки */
+        .work-status {
+            margin: 20px 0;
+        }
+
+        .work-status form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .work-status select {
+            background: #0f172a;
+            color: #e5e7eb;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 9px 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .work-status select:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        .work-status .status-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+
+        .work-status .status-button:hover {
+            background: #1d4ed8;
+        }
+
+        /* Цвета этапов обработки */
+        .status-new {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .status-progress {
+            color: #eab308;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            color: #22c55e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Панель администратора AIGolubev</h1>
+
+        <div class="stats">
+            <div class="stat-card">
+                <span>Всего заявок</span>
+                <strong>{{ total_count }}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span>Непрочитанных</span>
+                <strong class="unread-number">{{ unread_count }}</strong>
+            </div>
+        </div>
+
+        <!-- Фильтрация заявок -->
+        <div class="filters">
+            <a href="{{ url_for('admin_dashboard', status='all', work_status=work_status_filter, q=search_query) }}"
+                class="filter-button {% if status_filter == 'all' %}active{% endif %}">
+                Все заявки
+            </a>
+
+            <a href="{{ url_for('admin_dashboard', status='unread', work_status=work_status_filter, q=search_query) }}"
+                class="filter-button {% if status_filter == 'unread' %}active{% endif %}">
+                Непрочитанные
+            </a>
+        </div>
+
+        <!-- Фильтр по этапу обработки -->
+        <form action="{{ url_for('admin_dashboard') }}" method="GET" style="margin: 15px 0;">
+
+            <!-- Сохраняем фильтр прочитанных и поисковый запрос -->
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <input type="hidden" name="q" value="{{ search_query }}">
+
+            <label for="work_status">
+                Этап обработки:
+            </label>
+
+            <select name="work_status" id="work_status" style="background: #0f172a;
+                   color: white;
+                   border: 1px solid #334155;
+                   border-radius: 6px;
+                   padding: 9px 12px;
+                   margin-left: 10px;">
+
+                <option value="all" {% if work_status_filter=='all' %}selected{% endif %}>
+                    Все этапы
+                </option>
+
+                <option value="new" {% if work_status_filter=='new' %}selected{% endif %}>
+                    Новые
+                </option>
+
+                <option value="in_progress" {% if work_status_filter=='in_progress' %}selected{% endif %}>
+                    В работе
+                </option>
+
+                <option value="completed" {% if work_status_filter=='completed' %}selected{% endif %}>
+                    Завершённые
+                </option>
+            </select>
+
+            <button type="submit" class="search-button">
+                Применить
+            </button>
+        </form>
+
+        <!-- Поиск заявок -->
+        <form action="{{ url_for('admin_dashboard') }}" method="GET" class="search-form">
+
+            <input type="hidden" name="work_status" value="{{ work_status_filter }}">
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <input type="text" name="q" class="search-input" placeholder="Поиск по имени, email, теме или тексту заявки"
+                value="{{ search_query | default('', true) }}">
+
+            <button type="submit" class="search-button">
+                Найти
+            </button>
+
+            <a href="{{ url_for('admin_dashboard', status=status_filter, work_status=work_status_filter) }}"
+                class="filter-button">
+                Сбросить
+            </a>
+
+        </form>
+
+        {% for request in requests %}
+        <div class="request-card">
+            <h2>Заявка №{{ request.id }}</h2>
+
+            <p class="date">
+                Дата: {{ request.created_at.strftime('%d.%m.%Y %H:%M') }} UTC
+            </p>
+
+            <!-- Текущий статус заявки -->
+            <p>
+                <strong>Статус:</strong>
+
+                {% if request.is_read %}
+                <span class="status-read">Прочитано</span>
+                {% else %}
+                <span class="status-unread">Не прочитано</span>
+                {% endif %}
+            </p>
+
+            <!-- Кнопка изменения статуса -->
+            <form action="{{ url_for('toggle_request_read', request_id=request.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                {% if request.is_read %}
+                <button type="submit" class="status-button">
+                    Отметить как непрочитанное
+                </button>
+                {% else %}
+                <button type="submit" class="status-button">
+                    Отметить как прочитанное
+                </button>
+                {% endif %}
+            </form>
+
+            <!-- Рабочий статус заявки -->
+            <div class="work-status">
+                <p>
+                    <strong>Этап обработки:</strong>
+
+                    {% if request.status == 'new' %}
+                    <span class="status-new">Новая</span>
+                    {% elif request.status == 'in_progress' %}
+                    <span class="status-progress">В работе</span>
+                    {% elif request.status == 'completed' %}
+                    <span class="status-completed">Завершена</span>
+                    {% endif %}
+                </p>
+
+                <form action="{{ url_for('update_request_status', request_id=request.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <select name="status">
+                        <option value="new" {% if request.status=='new' %}selected{% endif %}>
+                            Новая
+                        </option>
+
+                        <option value="in_progress" {% if request.status=='in_progress' %}selected{% endif %}>
+                            В работе
+                        </option>
+
+                        <option value="completed" {% if request.status=='completed' %}selected{% endif %}>
+                            Завершена
+                        </option>
+                    </select>
+
+                    <button type="submit" class="status-button">
+                        Сохранить статус
+                    </button>
+                </form>
+            </div>
+
+            <p><strong>Имя:</strong> {{ request.name }}</p>
+            <p><strong>Email:</strong> {{ request.email }}</p>
+            <p><strong>Телефон:</strong> {{ request.phone or 'Не указан' }}</p>
+            <p><strong>Тема:</strong> {{ request.subject }}</p>
+
+            <p><strong>Описание задачи:</strong></p>
+            <p class="message">{{ request.message }}</p>
+        </div>
+        {% else %}
+        <p class="empty">Пока нет заявок от клиентов.</p>
+        {% endfor %}
+
+        <a href="{{ url_for('home') }}" class="back-link">
+            ← Вернуться на сайт
+        </a>
+        <form action="{{ url_for('admin_logout') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="logout-button">Выйти из панели</button>
+        </form>
+    </div>
+</body>
+
+</html>
