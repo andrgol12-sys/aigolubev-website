@@ -114,9 +114,11 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
+            {% if message == "Ваша заявка успешно отправлена!" %}
             <div class="flash-message flash-{{ category }}" role="status">
                 {{ message }}
             </div>
+            {% endif %}
             {% endfor %}
             {% endif %}
             {% endwith %}
