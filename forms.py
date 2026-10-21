@@ -1,7 +1,7 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, Email, Length, Optional
+from wtforms import StringField, TextAreaField, SubmitField, PasswordField, BooleanField
+from wtforms.validators import DataRequired, Email, Length, Optional, InputRequired
 
 
 class ContactForm(FlaskForm):
@@ -63,7 +63,15 @@ class ContactForm(FlaskForm):
             )
         ]
     )
-
+    consent = BooleanField(
+        "Я даю согласие на обработку персональных данных",
+        validators=[
+            InputRequired(
+                message="Для отправки заявки необходимо дать согласие на обработку персональных данных."
+            )
+        ],
+        default=False
+    )
     submit = SubmitField("Отправить заявку")
 
     

@@ -4,10 +4,10 @@ from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
-
 from models import db, ContactRequest, AdminUser
 from forms import ContactForm, AdminLoginForm
 from telegram_notify import send_telegram_notification
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 
@@ -48,6 +48,8 @@ def home():
             phone=form.phone.data or None,
             subject=form.subject.data,
             message=form.message.data,
+            consent_at=datetime.now(timezone.utc),
+            consent_version="1.1"
         )
 
         db.session.add(request_data)
@@ -149,6 +151,14 @@ def admin_dashboard():
         search_query=search_query,
         work_status_filter=work_status_filter,
     )
+
+@app.route("/consent")
+def consent():
+    return render_template("consent.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
 
 @app.route("/admin/logout", methods=["POST"])
 @login_required

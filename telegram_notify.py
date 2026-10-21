@@ -21,8 +21,7 @@ def send_telegram_notification(request_id, subject):
 
     message = (
         "🔔 Новая заявка на сайте AIGolubev!\n\n"
-        f"Номер заявки: {request_id}\n"
-        f"Тема: {subject}\n\n"
+        f"Номер заявки: {request_id}\n\n"
         "Откройте административную панель для просмотра."
     )
 

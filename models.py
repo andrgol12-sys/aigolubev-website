@@ -37,6 +37,17 @@ class ContactRequest(db.Model):
         nullable=False
     )
 
+    # Дата и время согласия на обработку персональных данных
+    consent_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    # Редакция согласия
+    consent_version = db.Column(
+        db.String(20),
+        nullable=True
+    )
     
 class AdminUser(UserMixin, db.Model):
     __tablename__ = "admin_users"

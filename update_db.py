@@ -1,18 +1,49 @@
+
 import sqlite3
 
-connection = sqlite3.connect("instance/aigolubev.db")
+DB_PATH = "instance/aigolubev.db"
+
+connection = sqlite3.connect(DB_PATH)
 
 try:
+    # Проверяем существующие столбцы таблицы
+    cursor = connection.execute("PRAGMA table_info(contact_requests)")
+    columns = {row[1] for row in cursor.fetchall()}
+
+    if not columns:
+        raise RuntimeError("Таблица contact_requests не найдена!")
+
+    # Добавляем дату и время согласия
+    if "consent_at" not in columns:
+        connection.execute(
+            "ALTER TABLE contact_requests ADD COLUMN consent_at DATETIME"
+        )
+        print("Добавлен столбец consent_at")
+    else:
+        print("Столбец consent_at уже существует")
+
+    # Добавляем редакцию согласия
+    if "consent_version" not in columns:
+        connection.execute(
+            "ALTER TABLE contact_requests ADD COLUMN consent_version VARCHAR(20)"
+        )
+        print("Добавлен столбец consent_version")
+    else:
+        print("Столбец consent_version уже существует")
+
+    connection.commit()
+
+    # Проверяем количество заявок
     cursor = connection.execute(
-        "SELECT id, status FROM contact_requests ORDER BY id"
+        "SELECT COUNT(*) FROM contact_requests"
     )
+    print(f"Всего заявок в базе: {cursor.fetchone()[0]}")
 
-    requests = cursor.fetchall()
+    print("Обновление базы завершено успешно!")
 
-    print(f"Всего заявок: {len(requests)}")
-
-    for request_id, status in requests:
-        print(f"Заявка №{request_id}: {status}")
+except Exception:
+    connection.rollback()
+    raise
 
 finally:
     connection.close()
