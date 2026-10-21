@@ -5,11 +5,55 @@ from flask_login import LoginManager, login_user, logout_user, current_user, log
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from models import db, ContactRequest, AdminUser
+from sqlalchemy.exc import SQLAlchemyError
 from forms import ContactForm, AdminLoginForm
 from telegram_notify import send_telegram_notification
 from datetime import datetime, timezone
+import time
+from flask import g
+from db_logger import DatabaseLogger
 
 app = Flask(__name__)
+
+# Инициализация технического логирования
+logger = DatabaseLogger(
+    db_path=os.path.join(app.instance_path, "logs.db")
+)
+
+# Начало обработки HTTP-запроса
+@app.before_request
+def start_request_timer():
+    g.request_start_time = time.perf_counter()
+
+
+# Завершение обработки HTTP-запроса
+@app.after_request
+def log_request(response):
+    start_time = getattr(g, "request_start_time", None)
+
+    if start_time is not None:
+        duration_ms = round(
+            (time.perf_counter() - start_time) * 1000
+        )
+
+        # Используем шаблон маршрута, а не URL с параметрами
+        route = (
+            request.url_rule.rule
+            if request.url_rule
+            else "unmatched"
+        )
+
+        logger.log_event(
+            event="http.request_completed",
+            level="INFO" if response.status_code < 400 else (
+                "WARNING" if response.status_code < 500 else "ERROR"
+            ),
+            route=route,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+        )
+
+    return response
 
 # Секретный ключ для защиты форм и сессий
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-local-key")
@@ -52,8 +96,30 @@ def home():
             consent_version="1.1"
         )
 
-        db.session.add(request_data)
-        db.session.commit()
+        try:
+            db.session.add(request_data)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+
+            logger.log_event(
+                event="contact.save_failed",
+                level="ERROR",
+                route="/",
+            )
+
+            flash(
+                "Не удалось сохранить заявку. Попробуйте позже.",
+                "error",
+            )
+            return redirect(url_for("home", _anchor="contacts"))
+
+        # Фиксируем успешное создание заявки без персональных данных
+        logger.log_event(
+            event="contact.created",
+            level="INFO",
+            route="/",
+        )
 
         # Отправляем уведомление о новой заявке в Telegram
         send_telegram_notification(
@@ -83,7 +149,22 @@ def admin_login():
 
         if admin and admin.check_password(form.password.data):
             login_user(admin)
+
+            # Успешный вход администратора
+            logger.log_event(
+                event="admin.login_succeeded",
+                level="INFO",
+                route="/admin/login",
+            )
+
             return redirect(url_for("admin_dashboard"))
+
+        # Неудачная попытка входа администратора
+        logger.log_event(
+            event="admin.login_failed",
+            level="WARNING",
+            route="/admin/login",
+        )
 
         flash("Неверный логин или пароль.", "error")
 
