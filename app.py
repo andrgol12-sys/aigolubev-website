@@ -1,8 +1,15 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
+from faq_assistant.visitor_identity import get_visitor_id
+from faq_assistant.sqlite_limiter import SQLiteLimiter
+from faq_assistant.privacy import contains_contact_data
+from faq_assistant.chat import FAQChat
 from werkzeug.middleware.proxy_fix import ProxyFix
 from models import db, ContactRequest, AdminUser
 from sqlalchemy.exc import SQLAlchemyError
@@ -58,6 +65,11 @@ def log_request(response):
 # Секретный ключ для защиты форм и сессий
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-local-key")
 
+# Защита cookie Flask-сессий
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
+
 # Настройки базы данных
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///aigolubev.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -67,6 +79,13 @@ db.init_app(app)
 # Защита POST-форм от CSRF-атак
 csrf = CSRFProtect(app)
 
+# Ограничение количества запросов к FAQ-ассистенту
+faq_limiter = SQLiteLimiter(
+    db_path=os.path.join(app.instance_path, "faq_limits.db"),
+    max_per_minute=5,
+    max_per_day=30,
+    max_total_per_day=200,
+)
 
 # Настройка авторизации администраторов
 login_manager = LoginManager()
@@ -286,6 +305,73 @@ def update_request_status(request_id):
 
     return redirect(url_for("admin_dashboard"))
 
+faq_assistant = FAQChat()
+
+@app.route("/api/faq/chat", methods=["POST"])
+def faq_chat_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return {
+            "success": False,
+            "message": "Некорректный формат запроса."
+        }, 400
+
+    question = data.get("question")
+
+    if not isinstance(question, str) or not question.strip():
+        return {
+            "success": False,
+            "message": "Пожалуйста, введите вопрос."
+        }, 400
+
+    if len(question) > 1000:
+        return {
+            "success": False,
+            "message": "Сократите вопрос до 1000 символов."
+        }, 400
+
+    # Не отправляем распознанные контактные данные в ИИ
+    if contains_contact_data(question):
+        return {
+            "success": False,
+            "message": (
+                "Пожалуйста, не указывайте контактные данные в чате. "
+                "Для связи воспользуйтесь формой заявки на сайте AIGolubev."
+            )
+        }, 400
+
+    visitor_id = get_visitor_id()
+
+    # Проверяем лимиты до обращения к ИИ
+    try:
+        allowed = faq_limiter.is_allowed(visitor_id)
+    except Exception:
+        app.logger.exception("FAQ rate limiter error")
+        return {
+            "success": False,
+            "message": "Сервис временно недоступен. Попробуйте позже."
+        }, 503
+
+    if not allowed:
+        return {
+            "success": False,
+            "message": "Превышен лимит запросов. Попробуйте позже."
+        }, 429
+
+    try:
+        answer = faq_assistant.ask(visitor_id, question)
+    except Exception:
+        app.logger.exception("FAQ assistant error")
+        return {
+            "success": False,
+            "message": "Не удалось получить ответ. Попробуйте позже."
+        }, 503
+
+    return {
+        "success": True,
+        "answer": answer
+    }, 200
 
 # Создание таблиц базы данных
 with app.app_context():
