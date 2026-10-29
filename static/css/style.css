@@ -640,3 +640,36 @@ textarea.form-control {
         font-size: 14px;
     }
 }
+
+/* Ссылки на проекты GitHub */
+
+.project-card a {
+    color: #59b7ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.project-card a:hover {
+    color: #a3dcff;
+    text-decoration: underline;
+}
+
+.project-card a:visited {
+    color: #59b7ff;
+}
+
+/* Список проектов внутри карточки */
+
+.project-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.project-links a {
+    display: block;
+    line-height: 1.5;
+}
