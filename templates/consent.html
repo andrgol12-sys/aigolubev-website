@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Согласие на обработку персональных данных — AIGolubev</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .legal-page {
@@ -158,6 +159,7 @@
             или до его отзыва с учётом требований законодательства.
         </p>
     </main>
+    {% include 'faq_widget.html' %}
 </body>
 
 </html>

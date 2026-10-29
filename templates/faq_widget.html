@@ -1,0 +1,64 @@
+<meta name="faq-csrf-token" content="{{ csrf_token() }}">
+
+<!-- FAQ-ассистент AIGolubev -->
+<div class="faq-widget" id="faq-widget">
+
+    <!-- Плавающая кнопка -->
+    <button type="button" class="faq-toggle" id="faq-toggle" aria-label="Открыть AI-помощника" aria-expanded="false"
+        aria-controls="faq-panel">
+        <span aria-hidden="true">💬</span>
+        <span>Задать вопрос</span>
+    </button>
+
+    <!-- Окно чата -->
+    <section class="faq-panel" id="faq-panel" aria-label="AI-помощник AIGolubev" hidden>
+
+        <header class="faq-header">
+            <div class="faq-header-info">
+                <span class="faq-avatar" aria-hidden="true">✦</span>
+                <div>
+                    <strong>AI-помощник AIGolubev</strong>
+                    <small>Ответы на вопросы об услугах</small>
+                </div>
+            </div>
+
+            <button type="button" class="faq-close" id="faq-close" aria-label="Закрыть чат">
+                &times;
+            </button>
+        </header>
+
+        <!-- История сообщений -->
+        <div class="faq-messages" id="faq-messages" role="log" aria-live="polite" aria-relevant="additions">
+
+            <div class="faq-message faq-message-bot faq-welcome">
+                <strong>Здравствуйте! 👋</strong>
+                <p>
+                    Я AI-помощник AIGolubev. Помогу разобраться
+                    в услугах и возможностях разработки.
+                    Задайте ваш вопрос!
+                </p>
+            </div>
+        </div>
+
+        <!-- Форма отправки сообщения -->
+        <form class="faq-input-form" id="faq-form">
+            <label class="faq-sr-only" for="faq-input">
+                Ваш вопрос
+            </label>
+
+            <input type="text" id="faq-input" name="question" placeholder="Напишите ваш вопрос..." maxlength="1000"
+                autocomplete="off" required>
+
+            <button type="submit" id="faq-send" aria-label="Отправить вопрос">
+                ➤
+            </button>
+        </form>
+
+        <div class="faq-footer">
+            Ответы формируются на основе базы знаний.
+            <a href="/#contacts">Оставить заявку</a>
+        </div>
+    </section>
+</div>
+
+<script src="{{ url_for('static', filename='js/faq_widget.js') }}" defer></script>
