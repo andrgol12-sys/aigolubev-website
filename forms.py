@@ -1,10 +1,17 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField, PasswordField, BooleanField
+from wtforms import StringField, TextAreaField, SubmitField, PasswordField, BooleanField, HiddenField
 from wtforms.validators import DataRequired, Email, Length, Optional, InputRequired
 
 
 class ContactForm(FlaskForm):
+    # Скрытое поле-ловушка для автоматических спам-ботов
+    website = HiddenField(
+        "Website",
+        validators=[
+            Length(max=0, message="Заявка отклонена.")
+        ]
+    )
     name = StringField(
         "Ваше имя",
         validators=[

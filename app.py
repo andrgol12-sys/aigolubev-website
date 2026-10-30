@@ -105,6 +105,11 @@ def home():
     form = ContactForm()
 
     if form.validate_on_submit():
+        # Антиспам: отклоняем заявки с заполненным скрытым полем
+        if request.form.get("website", "").strip():
+            app.logger.warning("Spam blocked by honeypot")
+            return redirect(url_for("home", _anchor="contacts"))
+        
         request_data = ContactRequest(
             name=form.name.data,
             email=form.email.data,

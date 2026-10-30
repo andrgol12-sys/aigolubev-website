@@ -166,6 +166,11 @@
             <form method="POST" action="{{ url_for('home') }}#contacts" novalidate>
                 {{ form.hidden_tag() }}
 
+                <!-- Антиспам: скрытое поле-ловушка -->
+                <div style="display: none;" aria-hidden="true">
+                    {{ form.website(tabindex="-1", autocomplete="off") }}
+                </div>
+
                 <div class="form-group">
                     {{ form.name.label }}
                     {{ form.name(class="form-control", placeholder="Ваше имя") }}
