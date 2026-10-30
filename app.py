@@ -112,12 +112,12 @@ def home():
         ]).lower()
 
         spam_markers = (
-            "casino games",
-            "casino online",
-            "online casino",
+            "casino",
             "gambling",
             "slot games",
             "feel free to visit my blog",
+            "also visit my web blog",
+            "1win",
         )
 
         if any(marker in spam_text for marker in spam_markers):
