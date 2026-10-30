@@ -104,6 +104,25 @@ def load_user(user_id):
 def home():
     form = ContactForm()
 
+    # Антиспам: проверка содержания заявки
+    if request.method == "POST":
+        spam_text = " ".join([
+            request.form.get("subject", ""),
+            request.form.get("message", "")
+        ]).lower()
+
+        spam_markers = (
+            "casino games",
+            "casino online",
+            "online casino",
+            "gambling",
+            "slot games",
+            "feel free to visit my blog",
+        )
+
+        if any(marker in spam_text for marker in spam_markers):
+            return redirect(url_for("home", _anchor="contacts"))
+
     if form.validate_on_submit():
         # Антиспам: отклоняем заявки с заполненным скрытым полем
         if request.form.get("website", "").strip():
